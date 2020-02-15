@@ -5,8 +5,6 @@ import voluptuous as vol
 from yalesmartalarmclient.client import (
     YALE_LOCK_STATE_LOCKED,
     YALE_LOCK_STATE_UNLOCKED,
-    YALE_LOCK_STATE_DOOR_OPEN,
-    YALE_LOCK_STATE_UNKNOWN,
     AuthenticationError,
     YaleSmartAlarmClient,
 )
