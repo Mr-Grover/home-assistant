@@ -19,6 +19,7 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_PASSWORD,
     CONF_USERNAME,
+    ATTR_ENTITY_ID,
     STATE_LOCKED,
     STATE_UNLOCKED,
 )
@@ -31,6 +32,7 @@ DEFAULT_NAME = "Yale Smart Alarm"
 DEFAULT_AREA_ID = "1"
 
 _LOGGER = logging.getLogger(__name__)
+
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -90,5 +92,4 @@ class YaleAlarmDevice(LockDevice):
     def update(self):
         """Return the state of the device."""
         lock_status = self._client.get_locks_status()
-
-        self._state = self._state_map.get(lock_status)
+        self._state = lock_status
