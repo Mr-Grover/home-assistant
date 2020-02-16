@@ -87,4 +87,4 @@ class YaleAlarmDevice(LockDevice):
         lock_status = self._client.get_locks_status()
         for name in lock_status:
             self._name = name
-        self._state = lock_status[name]
+            self._state = self._state_map.get(lock_status[name])
