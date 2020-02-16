@@ -10,7 +10,6 @@ from yalesmartalarmclient.client import (
 )
 
 from homeassistant.components.lock import (
-    SUPPORT_OPEN,
     LockDevice,
     PLATFORM_SCHEMA,
 )
@@ -19,7 +18,6 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_PASSWORD,
     CONF_USERNAME,
-    ATTR_ENTITY_ID,
     STATE_LOCKED,
     STATE_UNLOCKED,
 )
@@ -27,7 +25,7 @@ import homeassistant.helpers.config_validation as cv
 
 CONF_AREA_ID = "area_id"
 
-DEFAULT_NAME = "Yale Smart Alarm"
+DEFAULT_NAME = "Yale Smart Lock"
 
 DEFAULT_AREA_ID = "1"
 
@@ -84,12 +82,9 @@ class YaleAlarmDevice(LockDevice):
         """Return the state of the device."""
         return self._state
 
-    @property
-    def supported_features(self) -> int:
-        """Return the list of supported features."""
-        return SUPPORT_OPEN
-
     def update(self):
         """Return the state of the device."""
         lock_status = self._client.get_locks_status()
-        self._state = lock_status
+        for name in lock_status:
+            self._name = name
+        self._state = lock_status[name]
