@@ -3,8 +3,6 @@ import logging
 
 import voluptuous as vol
 from yalesmartalarmclient.client import (
-    YALE_LOCK_STATE_LOCKED,
-    YALE_LOCK_STATE_UNLOCKED,
     AuthenticationError,
     YaleSmartAlarmClient,
 )
@@ -19,8 +17,6 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_PASSWORD,
     CONF_USERNAME,
-    STATE_LOCKED,
-    STATE_UNLOCKED,
 )
 import homeassistant.helpers.config_validation as cv
 
@@ -29,6 +25,8 @@ CONF_AREA_ID = "area_id"
 DEFAULT_NAME = "Yale Smart Lock"
 
 DEFAULT_AREA_ID = "1"
+
+DEFAULT_ICON = "mdi:lock"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -65,24 +63,19 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
 
 class YaleAlarmDevice(BinarySensorDevice):
-    """Represent a Yale Smart Alarm."""
+    """Represent a Yale Smart Sync Lock."""
 
     def __init__(self, name, client, device_class: str):
-        """Initialize the Yale Alarm Device."""
+        """Initialize the Yale Sync Lock."""
         self._name = name
         self._client = client
         self._state = None
-        self._device_class = device_class
-
-        self._state_map = {
-            YALE_LOCK_STATE_LOCKED: STATE_LOCKED,
-            YALE_LOCK_STATE_UNLOCKED: STATE_UNLOCKED,
-        }
+        self._device_class = DEVICE_CLASS_LOCK
 
     @property
     def device_class(self):
         """Return the class of the binary sensor."""
-        return self._device_class
+        return DEVICE_CLASS_LOCK
 
     @property
     def name(self):
@@ -94,17 +87,14 @@ class YaleAlarmDevice(BinarySensorDevice):
         """Return the state of the device."""
         return self._state
 
+    @property
+    def is_on(self):
+        """Return the state of the binary sensor."""
+        return self._state
+
     def update(self):
         """Return the state of the device."""
         lock_status = self._client.get_locks_status()
         for name in lock_status:
             self._name = name
-            self._state = self._state_map.get(lock_status[name])
-
-    @property
-    def is_on(self):
-        """Return the state of the binary sensor."""
-        lock_status = self._client.get_locks_status()
-        for name in lock_status:
-            self._name = name
-            self._state = self._state_map.get(lock_status[name])
+            self._state = lock_status[name]
