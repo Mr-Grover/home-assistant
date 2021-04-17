@@ -2,7 +2,7 @@
   "domain": "yale_smart_sync",
   "name": "Yale Smart Sync Home",
   "documentation": "https://www.home-assistant.io/integrations/yale_smart_alarm",
-  "requirements": ["yalesmartalarmclient==0.3.1","backoff==1.10.0"],
+  "requirements": ["yalesmartalarmclient==0.3.2"],
   "codeowners": [],
   "iot_class": "cloud_polling"
 }
