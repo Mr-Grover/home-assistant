@@ -1,68 +1,34 @@
 """Component for interacting with the Yale Smart Alarm System API."""
 import logging
 
-import voluptuous as vol
-from yalesmartalarmclient.client import (
-    YALE_STATE_ARM_FULL,
-    YALE_STATE_ARM_PARTIAL,
-    YALE_STATE_DISARM,
-    AuthenticationError,
-    YaleSmartAlarmClient,
-)
-
-from homeassistant.components.alarm_control_panel import (
-    PLATFORM_SCHEMA,
-    AlarmControlPanelEntity,
-)
+import homeassistant.components.alarm_control_panel as alarm
 from homeassistant.components.alarm_control_panel.const import (
     SUPPORT_ALARM_ARM_AWAY,
     SUPPORT_ALARM_ARM_HOME,
 )
 from homeassistant.const import (
-    CONF_NAME,
-    CONF_PASSWORD,
-    CONF_USERNAME,
     STATE_ALARM_ARMED_AWAY,
     STATE_ALARM_ARMED_HOME,
     STATE_ALARM_DISARMED,
 )
-import homeassistant.helpers.config_validation as cv
 
-CONF_AREA_ID = "area_id"
-
-DEFAULT_NAME = "Yale Smart Sync Alarm"
-
-DEFAULT_AREA_ID = "1"
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {
-        vol.Required(CONF_USERNAME): cv.string,
-        vol.Required(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
-        vol.Optional(CONF_AREA_ID, default=DEFAULT_AREA_ID): cv.string,
-    }
-)
+
+async def async_setup_entry(hass, entry, async_add_entities) -> None:
+    """Set up Yale Smart Sync alarm panels based on a config entry."""
+    alarms = []
+
+    client = hass.data[DOMAIN][entry.entry_id]
+
+    alarms.append(client)
+
+    async_add_entities(alarms, True)
 
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
-    """Set up the alarm platform."""
-    name = config[CONF_NAME]
-    username = config[CONF_USERNAME]
-    password = config[CONF_PASSWORD]
-    area_id = config[CONF_AREA_ID]
-
-    try:
-        client = YaleSmartAlarmClient(username, password, area_id)
-    except AuthenticationError:
-        _LOGGER.error("Authentication failed. Check credentials")
-        return
-
-    add_entities([YaleAlarmDevice(name, client)], True)
-
-
-class YaleAlarmDevice(AlarmControlPanelEntity):
+class YaleAlarmDevice(alarm.AlarmControlPanelEntity):
     """Represent a Yale Smart Alarm."""
 
     def __init__(self, name, client):
@@ -72,9 +38,9 @@ class YaleAlarmDevice(AlarmControlPanelEntity):
         self._state = None
 
         self._state_map = {
-            YALE_STATE_DISARM: STATE_ALARM_DISARMED,
-            YALE_STATE_ARM_PARTIAL: STATE_ALARM_ARMED_HOME,
-            YALE_STATE_ARM_FULL: STATE_ALARM_ARMED_AWAY,
+            STATE_ALARM_DISARMED: STATE_ALARM_DISARMED,
+            STATE_ALARM_ARMED_HOME: STATE_ALARM_ARMED_HOME,
+            STATE_ALARM_ARMED_AWAY: STATE_ALARM_ARMED_AWAY,
         }
 
     @property
