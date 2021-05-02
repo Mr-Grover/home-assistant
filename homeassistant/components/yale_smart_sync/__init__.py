@@ -14,7 +14,7 @@ from .const import CONF_AREA, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["alarm_control_panel", "binary_sensor"]
+PLATFORMS = ["alarm_control_panel"]
 
 CONFIG_SCHEMA = vol.Schema(
     vol.All(
@@ -40,7 +40,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     area_id = CONF_AREA
 
     try:
-        client = YaleSmartAlarmClient(username, password, area_id)
+        client = await hass.async_add_executor_job(
+            YaleSmartAlarmClient, username, password, area_id
+        )
     except AuthenticationError:
         _LOGGER.error("Authentication failed. Check credentials")
         return

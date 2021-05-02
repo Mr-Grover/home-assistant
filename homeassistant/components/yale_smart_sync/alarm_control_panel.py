@@ -1,6 +1,12 @@
 """Component for interacting with the Yale Smart Alarm System API."""
 import logging
 
+from yalesmartalarmclient.client import (
+    YALE_STATE_ARM_FULL,
+    YALE_STATE_ARM_PARTIAL,
+    YALE_STATE_DISARM,
+)
+
 import homeassistant.components.alarm_control_panel as alarm
 from homeassistant.components.alarm_control_panel.const import (
     SUPPORT_ALARM_ARM_AWAY,
@@ -19,11 +25,12 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, entry, async_add_entities) -> None:
     """Set up Yale Smart Sync alarm panels based on a config entry."""
+
     alarms = []
 
     client = hass.data[DOMAIN][entry.entry_id]
 
-    alarms.append(client)
+    alarms.append(YaleAlarmDevice("Yale Smart Sync", client))
 
     async_add_entities(alarms, True)
 
@@ -38,9 +45,9 @@ class YaleAlarmDevice(alarm.AlarmControlPanelEntity):
         self._state = None
 
         self._state_map = {
-            STATE_ALARM_DISARMED: STATE_ALARM_DISARMED,
-            STATE_ALARM_ARMED_HOME: STATE_ALARM_ARMED_HOME,
-            STATE_ALARM_ARMED_AWAY: STATE_ALARM_ARMED_AWAY,
+            YALE_STATE_DISARM: STATE_ALARM_DISARMED,
+            YALE_STATE_ARM_PARTIAL: STATE_ALARM_ARMED_HOME,
+            YALE_STATE_ARM_FULL: STATE_ALARM_ARMED_AWAY,
         }
 
     @property
