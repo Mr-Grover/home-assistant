@@ -2,12 +2,14 @@
 import asyncio
 import logging
 
+import requests
 import voluptuous as vol
-from yalesmartalarmclient.client import AuthenticationError, YaleSmartAlarmClient
+from yalesmartalarmclient.client import YaleSmartAlarmClient
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 import homeassistant.helpers.config_validation as cv
 
 from .const import CONF_AREA, DOMAIN
@@ -43,9 +45,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         client = await hass.async_add_executor_job(
             YaleSmartAlarmClient, username, password, area_id
         )
-    except AuthenticationError:
-        _LOGGER.error("Authentication failed. Check credentials")
-        return
+    except requests.exceptions.HTTPError as exception:
+        _LOGGER.warning(exception)
+        raise ConfigEntryNotReady from exception
+
+    if not client:
+        raise ConfigEntryAuthFailed
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = client

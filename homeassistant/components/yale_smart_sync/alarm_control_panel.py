@@ -11,6 +11,7 @@ import homeassistant.components.alarm_control_panel as alarm
 from homeassistant.components.alarm_control_panel.const import (
     SUPPORT_ALARM_ARM_AWAY,
     SUPPORT_ALARM_ARM_HOME,
+    SUPPORT_ALARM_TRIGGER,
 )
 from homeassistant.const import (
     STATE_ALARM_ARMED_AWAY,
@@ -63,7 +64,7 @@ class YaleAlarmDevice(alarm.AlarmControlPanelEntity):
     @property
     def supported_features(self) -> int:
         """Return the list of supported features."""
-        return SUPPORT_ALARM_ARM_HOME | SUPPORT_ALARM_ARM_AWAY
+        return SUPPORT_ALARM_ARM_HOME | SUPPORT_ALARM_ARM_AWAY | SUPPORT_ALARM_TRIGGER
 
     def update(self):
         """Return the state of the device."""
@@ -82,3 +83,7 @@ class YaleAlarmDevice(alarm.AlarmControlPanelEntity):
     def alarm_arm_away(self, code=None):
         """Send arm away command."""
         self._client.arm_full()
+
+    def alarm_trigger(self, code=None):
+        """Trigger Panic Button."""
+        self._client.trigger_panic_button()

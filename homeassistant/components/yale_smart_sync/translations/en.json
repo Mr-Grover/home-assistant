@@ -1,0 +1,27 @@
+{
+    "config": {
+        "error": {
+            "already_configured": "Account is already configured",
+            "cannot_connect": "Failed to connect",
+            "invalid_auth": "Invalid authentication"
+        },
+        "flow_title": "Yale Smart Sync: {username}",
+        "step": {
+            "reauth": {
+                "data": {
+                    "password": "Password"
+                },
+                "description": "Authentication failed for Yale Smart Sync. Please enter your current credentials.",
+                "title": "Reauthentication"
+            },
+            "user": {
+                "data": {
+                    "password": "Password",
+                    "username": "Username"
+                },
+                "description": "Set up an Yale Smart Sync instance to access your alarm and locks.",
+                "title": "Yale Smart Sync"
+            }
+        }
+    }
+}
