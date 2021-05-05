@@ -17,6 +17,7 @@ from homeassistant.const import (
     STATE_ALARM_ARMED_AWAY,
     STATE_ALARM_ARMED_HOME,
     STATE_ALARM_DISARMED,
+    STATE_ALARM_TRIGGERED,
 )
 
 from .const import DOMAIN
@@ -70,7 +71,8 @@ class YaleAlarmDevice(alarm.AlarmControlPanelEntity):
         """Return the state of the device."""
         armed_status = self._client.get_armed_status()
 
-        self._state = self._state_map.get(armed_status)
+        if self._state is not STATE_ALARM_TRIGGERED:
+            self._state = self._state_map.get(armed_status)
 
     def alarm_disarm(self, code=None):
         """Send disarm command."""
@@ -87,3 +89,4 @@ class YaleAlarmDevice(alarm.AlarmControlPanelEntity):
     def alarm_trigger(self, code=None):
         """Trigger Panic Button."""
         self._client.trigger_panic_button()
+        self._state = STATE_ALARM_TRIGGERED
