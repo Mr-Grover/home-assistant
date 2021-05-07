@@ -16,7 +16,7 @@ from .const import CONF_AREA, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["alarm_control_panel"]
+PLATFORMS = ["alarm_control_panel", "lock"]
 
 CONFIG_SCHEMA = vol.Schema(
     vol.All(
@@ -59,7 +59,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, platform)
         )
-
     return True
 
 
