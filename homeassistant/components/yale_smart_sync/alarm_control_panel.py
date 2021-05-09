@@ -32,7 +32,7 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
 
     client = hass.data[DOMAIN][entry.entry_id]
 
-    alarms.append(YaleAlarmDevice("Yale Smart Sync", client))
+    alarms.append(YaleAlarmDevice("Yale Smart Alarm", client))
 
     async_add_entities(alarms, True)
 

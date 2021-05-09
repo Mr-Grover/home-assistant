@@ -23,7 +23,11 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     client = hass.data[DOMAIN][config_entry.entry_id]
 
-    locks.append(YaleLockDevice("lock", client))
+    lock_name = await hass.async_add_executor_job(client.get_locks_status)
+    for lock_name in lock_name.keys():
+        lock_name = lock_name
+
+    locks.append(YaleLockDevice(f"{lock_name} Lock", client, lock_name))
 
     async_add_entities(locks, True)
 
@@ -31,11 +35,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class YaleLockDevice(LockEntity):
     """Representation of an Yale lock."""
 
-    def __init__(self, name, client):
+    def __init__(self, name, client, lock_name):
         """Initialize the lock."""
         self._name = name
         self._client = client
         self._state = None
+        self._lock_name = lock_name
 
         self._state_map = {
             YALE_LOCK_STATE_DOOR_OPEN: STATE_OPEN,
@@ -57,16 +62,14 @@ class YaleLockDevice(LockEntity):
     def update(self):
         """Return the state of the device."""
         lock_status = self._client.get_locks_status()
-        for name in lock_status.keys():
-            name = name
-        self._state = lock_status[name]
+        self._state = lock_status[self._lock_name]
 
     def lock(self, code=None):
         """Send disarm command."""
-        lock = self._client.lock_api.get(name="House")
+        lock = self._client.lock_api.get(self._lock_name)
         lock.close()
 
     def unlock(self, code=None):
         """Send arm home command."""
-        lock = self._client.lock_api.get(name="House")
-        lock.open(pin_code="0287")
+        lock = self._client.lock_api.get(self._lock_name)
+        lock.open(pin_code="****")
