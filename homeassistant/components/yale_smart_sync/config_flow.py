@@ -6,13 +6,20 @@ import voluptuous as vol
 from yalesmartalarmclient.client import YaleSmartAlarmClient
 
 from homeassistant import config_entries
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_PASSWORD, CONF_PIN, CONF_USERNAME
 
 from .const import CONF_AREA, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 REAUTH_SCHEMA = vol.Schema({vol.Required(CONF_PASSWORD): str})
+DATA_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_USERNAME): str,
+        vol.Required(CONF_PASSWORD): str,
+        vol.Required(CONF_PIN): str,
+    }
+)
 
 
 class YaleSmartSyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -25,6 +32,7 @@ class YaleSmartSyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.username = None
         self.password = None
         self.area_id = None
+        self._reauth_entry = None
 
     async def async_step_user(self, user_input=None):
         """Handle a flow initiated by the user."""
@@ -35,9 +43,13 @@ class YaleSmartSyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             username = user_input[CONF_USERNAME]
             password = user_input[CONF_PASSWORD]
             area_id = CONF_AREA
+            unique_id = user_input[CONF_USERNAME].lower()
+            await self.async_set_unique_id(unique_id)
+            if not self._reauth_entry:
+                self._abort_if_unique_id_configured
 
             try:
-                client = await self.hass.async_add_executor_job(
+                await self.hass.async_add_executor_job(
                     YaleSmartAlarmClient, username, password, area_id
                 )
             except requests.exceptions.HTTPError:
@@ -45,66 +57,27 @@ class YaleSmartSyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.error("Authentication failed. Check credentials")
 
             else:
-                if client:
-                    self.username = username
-                    self.password = password
-                    self.area_id = area_id
-
-                    await self.async_set_unique_id(username)
-                    self._abort_if_unique_id_configured()
-
+                if not self._reauth_entry:
                     return self.async_create_entry(
-                        title="Yale Smart Sync",
-                        data={
-                            CONF_USERNAME: self.username,
-                            CONF_PASSWORD: self.password,
-                        },
+                        title=user_input[CONF_USERNAME], data=user_input
                     )
-
-        data_schema = vol.Schema(
-            {
-                vol.Required(CONF_USERNAME): str,
-                vol.Required(CONF_PASSWORD): str,
-            }
-        )
+                self.hass.config_entries.async_update_entry(
+                    self._reauth_entry, data=user_input, unique_id=unique_id
+                )
+                # Reload the config entry otherwise devices will remain unavailable
+                self.hass.async_create_task(
+                    self.hass.config_entries.async_reload(self._reauth_entry.entry_id)
+                )
+                return self.async_abort(reason="reauth_successful")
 
         return self.async_show_form(
-            step_id="user", data_schema=data_schema, errors=errors
+            step_id="user", data_schema=DATA_SCHEMA, errors=errors
         )
 
     async def async_step_reauth(self, user_input=None):
-        """Dialog that informs the user that reauth is required."""
-        errors = {}
-
-        if user_input and user_input.get(CONF_USERNAME):
-            self.username = user_input[CONF_USERNAME]
-            self.area_id = CONF_AREA
-
-        self.context["title_placeholders"] = {CONF_USERNAME: self.username}
-
-        if user_input is not None and user_input.get(CONF_PASSWORD) is not None:
-            try:
-                await self.hass.async_add_executor_job(
-                    YaleSmartAlarmClient,
-                    self.username,
-                    user_input[CONF_PASSWORD],
-                    self.area_id,
-                )
-            except requests.exceptions.HTTPError:
-                _LOGGER.error("Authentication failed. Check credentials")
-                errors["base"] = "invalid_auth"
-
-            entry = await self.async_set_unique_id(self.username)
-            self.hass.config_entries.async_update_entry(
-                entry,
-                data={
-                    CONF_USERNAME: self.username,
-                    CONF_PASSWORD: self.password,
-                },
-            )
-
-            return self.async_abort(reason="reauth_successful")
-
-        return self.async_show_form(
-            step_id="reauth", data_schema=REAUTH_SCHEMA, errors=errors
+        """Perform reauth if the user credentials have changed."""
+        self._reauth_entry = self.hass.config_entries.async_get_entry(
+            self.context["entry_id"]
         )
+        self._username = user_input[CONF_USERNAME]
+        return await self.async_step_user()

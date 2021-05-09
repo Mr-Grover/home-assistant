@@ -23,7 +23,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     client = hass.data[DOMAIN][config_entry.entry_id]
 
-    locks.append(YaleLockDevice("Lock", client))
+    locks.append(YaleLockDevice("lock", client))
 
     async_add_entities(locks, True)
 
@@ -66,7 +66,7 @@ class YaleLockDevice(LockEntity):
         lock = self._client.lock_api.get(name="House")
         lock.close()
 
-    def unlock(self, code="****"):
+    def unlock(self, code=None):
         """Send arm home command."""
         lock = self._client.lock_api.get(name="House")
-        lock.open(pin_code="****")
+        lock.open(pin_code="0287")

@@ -5,7 +5,6 @@
             "cannot_connect": "Failed to connect",
             "invalid_auth": "Invalid authentication"
         },
-        "flow_title": "Yale Smart Sync: {username}",
         "step": {
             "reauth": {
                 "data": {
@@ -17,11 +16,13 @@
             "user": {
                 "data": {
                     "password": "Password",
-                    "username": "Username"
+                    "username": "Username",
+                    "pin": "PinCode"
                 },
                 "description": "Set up an Yale Smart Sync instance to access your alarm and locks.",
                 "title": "Yale Smart Sync"
             }
         }
-    }
+    },
+    "title": "Yale Smart Sync"
 }
