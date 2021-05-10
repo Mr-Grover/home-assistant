@@ -17,7 +17,7 @@
                 "data": {
                     "password": "Password",
                     "username": "Username",
-                    "pin": "PinCode"
+                    "pin": "Pincode used with your smart lock"
                 },
                 "description": "Set up an Yale Smart Sync instance to access your alarm and locks.",
                 "title": "Yale Smart Sync"
