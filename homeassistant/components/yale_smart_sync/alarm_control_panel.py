@@ -58,6 +58,11 @@ class YaleAlarmDevice(alarm.AlarmControlPanelEntity):
         return self._name
 
     @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        return f"{self.name}_alarm"
+
+    @property
     def state(self):
         """Return the state of the device."""
         return self._state

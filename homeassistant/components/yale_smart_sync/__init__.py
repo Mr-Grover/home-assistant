@@ -13,7 +13,7 @@ from .const import CONF_AREA, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["alarm_control_panel", "lock"]
+PLATFORMS = ["alarm_control_panel", "lock", "binary_sensor"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):

@@ -34,8 +34,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     lock_name = await hass.async_add_executor_job(client.get_locks_status)
     for lock_name in lock_name.keys():
         lock_name = lock_name
-
-    locks.append(YaleLockDevice(f"{lock_name} Lock", client, lock_name, pin))
+        locks.append(YaleLockDevice(f"{lock_name} Lock", client, lock_name, pin))
 
     async_add_entities(locks, True)
 
@@ -62,6 +61,11 @@ class YaleLockDevice(LockEntity):
     def name(self):
         """Return the name of the device."""
         return self._name
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        return f"{self.name}_lock"
 
     @property
     def state(self):
