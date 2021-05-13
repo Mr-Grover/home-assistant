@@ -1,8 +1,11 @@
-"""Doorsensor Support for the Nuki Lock."""
+"""Doorsensor Support for the Yale door contacts."""
 
 import logging
 
-from yalesmartalarmclient.client import YALE_DOOR_CONTACT_STATE_OPEN
+from yalesmartalarmclient.client import (
+    YALE_DOOR_CONTACT_STATE_OPEN,
+    YALE_DOOR_CONTACT_STATE_UNKNOWN,
+)
 
 from homeassistant.components.binary_sensor import DEVICE_CLASS_DOOR, BinarySensorEntity
 
@@ -38,6 +41,21 @@ class YaleDoorsensorEntity(BinarySensorEntity):
         self._door_contact = door_contact
 
     @property
+    def is_on(self):
+        """Return true if the door is open."""
+        return self._door_contact == YALE_DOOR_CONTACT_STATE_OPEN
+
+    @property
+    def available(self):
+        """Return true if the binary sensor is available."""
+        return self._state is not YALE_DOOR_CONTACT_STATE_UNKNOWN
+
+    def update(self):
+        """Return the state of the device."""
+        door_contact_status = self._client.get_doors_status()
+        self._state = door_contact_status[self._door_contact]
+
+    @property
     def name(self):
         """Return the name of the doorsensor."""
         return self._name
@@ -52,20 +70,10 @@ class YaleDoorsensorEntity(BinarySensorEntity):
         """Return the state of the device."""
         return self._state
 
-    def update(self):
-        """Return the state of the device."""
-        door_contact_status = self._client.get_doors_status()
-        self._state = door_contact_status[self._door_contact]
-
     @property
     def door_sensor_state_name(self):
         """Return the state name of the door sensor."""
         return self._door_contact
-
-    @property
-    def is_on(self):
-        """Return true if the door is open."""
-        return self._door_contact == YALE_DOOR_CONTACT_STATE_OPEN
 
     @property
     def device_class(self):

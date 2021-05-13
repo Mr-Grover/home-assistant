@@ -1,21 +1,8 @@
 """Support for Yale lock."""
 import logging
 
-from yalesmartalarmclient.client import (
-    YALE_LOCK_STATE_DOOR_OPEN,
-    YALE_LOCK_STATE_LOCKED,
-    YALE_LOCK_STATE_UNKNOWN,
-    YALE_LOCK_STATE_UNLOCKED,
-)
-
 from homeassistant.components.lock import LockEntity
-from homeassistant.const import (
-    CONF_PIN,
-    STATE_LOCKED,
-    STATE_OPEN,
-    STATE_UNKNOWN,
-    STATE_UNLOCKED,
-)
+from homeassistant.const import CONF_PIN
 
 from .const import DOMAIN
 
@@ -34,7 +21,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     lock_name = await hass.async_add_executor_job(client.get_locks_status)
     for lock_name in lock_name.keys():
         lock_name = lock_name
-        locks.append(YaleLockDevice(f"{lock_name} Lock", client, lock_name, pin))
+        locks.append(YaleLockDevice(f"{lock_name}", client, lock_name, pin))
 
     async_add_entities(locks, True)
 
@@ -49,13 +36,6 @@ class YaleLockDevice(LockEntity):
         self._state = None
         self._lock_name = lock_name
         self._pin = pin
-
-        self._state_map = {
-            YALE_LOCK_STATE_DOOR_OPEN: STATE_OPEN,
-            YALE_LOCK_STATE_LOCKED: STATE_LOCKED,
-            YALE_LOCK_STATE_UNLOCKED: STATE_UNLOCKED,
-            YALE_LOCK_STATE_UNKNOWN: STATE_UNKNOWN,
-        }
 
     @property
     def name(self):
